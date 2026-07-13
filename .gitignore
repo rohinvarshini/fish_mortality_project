@@ -1,0 +1,44 @@
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Data — raw downloads (too large for git)
+data/raw/
+data/processed/
+
+# Model checkpoints
+checkpoints/*.pt
+
+# Logs
+logs/*.json
+
+# Output plots
+evaluation/*.png
+explainability/*.png
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Kaggle API token (never commit this)
+kaggle.json
