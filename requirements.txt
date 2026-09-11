@@ -12,3 +12,6 @@ kaggle>=1.5.16
 opencv-python>=4.8.0
 grad-cam>=1.4.8
 imbalanced-learn>=0.11.0
+fastapi>=0.110.0
+uvicorn>=0.29.0
+python-multipart>=0.0.9

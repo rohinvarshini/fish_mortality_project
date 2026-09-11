@@ -12,7 +12,9 @@
 import argparse
 import subprocess
 import sys
+import os
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 STEPS = {
     "download":    ("data/download_datasets.py",      "Downloading datasets"),
@@ -26,10 +28,11 @@ STEPS = {
 
 def run_step(name: str):
     script, label = STEPS[name]
+    script_path = os.path.join(BASE_DIR, script)
     print(f"\n{'='*60}")
     print(f"  >>> {label}")
     print(f"{'='*60}")
-    result = subprocess.run([sys.executable, script])
+    result = subprocess.run([sys.executable, script_path], cwd=BASE_DIR)
     if result.returncode != 0:
         print(f"\n[x] Step '{name}' failed. Fix the error above and re-run.")
         sys.exit(result.returncode)

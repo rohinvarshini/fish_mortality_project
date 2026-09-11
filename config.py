@@ -12,6 +12,8 @@ DATA_RAW       = os.path.join(BASE_DIR, "data", "raw")
 DATA_PROCESSED = os.path.join(BASE_DIR, "data", "processed")
 CHECKPOINTS    = os.path.join(BASE_DIR, "checkpoints")
 LOGS           = os.path.join(BASE_DIR, "logs")
+IMAGE_DIR      = os.path.join(DATA_RAW, "images")
+IMAGE_SIZE     = 224  # MobileNetV2 input size
 
 # ── Dataset filenames (after download) ───────────────────────────────────────
 TILAPIA_CSV    = os.path.join(DATA_RAW, "tilapia_iot.csv")   # Dataset T1 — single CSV

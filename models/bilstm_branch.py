@@ -56,7 +56,7 @@ class BiLSTMForecaster(nn.Module):
 
         # ── Bidirectional LSTM ────────────────────────────────────────────
         # output size per timestep = hidden_size * 2 (forward + backward)
-        self.bilstm = nn.LSTM(
+        self.lstm = nn.LSTM(
             input_size   = input_size,
             hidden_size  = hidden_size,
             num_layers   = num_layers,
@@ -76,7 +76,7 @@ class BiLSTMForecaster(nn.Module):
 
     def _init_weights(self):
         """Xavier init for LSTM weights; zeros for biases."""
-        for name, param in self.bilstm.named_parameters():
+        for name, param in self.lstm.named_parameters():
             if "weight_ih" in name:
                 nn.init.xavier_uniform_(param.data)
             elif "weight_hh" in name:
@@ -100,7 +100,7 @@ class BiLSTMForecaster(nn.Module):
             Predicted standardised DO value at t + forecast_horizon.
         """
         # x: (batch, T=24, F=5)
-        lstm_out, _ = self.bilstm(x)     # (batch, T, hidden*2)
+        lstm_out, _ = self.lstm(x)       # (batch, T, hidden*2)
         last        = lstm_out[:, -1, :] # take last timestep: (batch, hidden*2)
         last        = self.dropout(last)
         return self.fc(last)             # (batch, 1)

@@ -76,9 +76,13 @@ def build_dataloaders() -> tuple:
 
     print(f"  Train: {len(train_ds):,}  Val: {len(val_ds):,}  Test: {len(test_ds):,}")
 
-    train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True,  num_workers=0)
-    val_loader   = DataLoader(val_ds,   batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
-    test_loader  = DataLoader(test_ds,  batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
+    # 668k training rows at batch_size=32 (~21k batches/epoch) is CPU-bound on
+    # per-batch Python/loop overhead, not actual math -- a much larger batch
+    # cuts batch count ~128x with negligible effect on this small MLP's quality.
+    fast_batch_size = 4096
+    train_loader = DataLoader(train_ds, batch_size=fast_batch_size, shuffle=True,  num_workers=0)
+    val_loader   = DataLoader(val_ds,   batch_size=fast_batch_size, shuffle=False, num_workers=0)
+    test_loader  = DataLoader(test_ds,  batch_size=fast_batch_size, shuffle=False, num_workers=0)
     return train_loader, val_loader, test_loader, yr_train
 
 
