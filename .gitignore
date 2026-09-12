@@ -44,3 +44,9 @@ Thumbs.db
 kaggle.json
 
 algal_blooms/
+
+# Generated processed datasets
+archive_5min/data_processed/
+archive_5min/trained_model/
+archive_30min/data_processed/
+archive_30min/trained_model/
