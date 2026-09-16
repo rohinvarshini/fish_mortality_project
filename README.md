@@ -121,7 +121,7 @@ Start the backend from the project root:
 
 ```powershell
 .venv\Scripts\Activate.ps1
-python -m uvicorn api:app --reload --port 8000
+python -m uvicorn archive_api:app --reload --port 8000
 ```
 
 In a second terminal, install and start the frontend:
