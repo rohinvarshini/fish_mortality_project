@@ -4,7 +4,6 @@ from pydantic import BaseModel
 import torch
 import torch.nn as nn
 import numpy as np
-import pickle
 import os
 import sys
 import io
@@ -19,6 +18,7 @@ warnings.filterwarnings("ignore")
 # Append project root
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
+from models.archive_model import load_scaler
 
 app = FastAPI(title="Fish Mortality Prediction API")
 
@@ -39,10 +39,13 @@ class WaterQualityInput(BaseModel):
     ammonia: float
     fish_weight: float = 0.0  # accepted for UI compatibility; not used by the real pipeline
 
+
+class ArchivePredictionInput(WaterQualityInput):
+    interval: str = "5min"
+
 # ── Load Scaler (fit on the 5 real TABULAR_FEATURES) ───────────────────────────
 scaler_path = os.path.join(BASE_DIR, "data", "processed", "scaler.pkl")
-with open(scaler_path, 'rb') as f:
-    scaler = pickle.load(f)
+scaler = load_scaler(scaler_path)
 scale_mean = scaler.mean_
 scale_std = scaler.scale_
 
@@ -226,6 +229,26 @@ async def predict_risk(data: WaterQualityInput):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/archive-predict")
+async def predict_archive_risk(data: ArchivePredictionInput):
+    if data.interval not in {"5min", "30min"}:
+        raise HTTPException(status_code=400, detail="interval must be '5min' or '30min'")
+
+    try:
+        import time
+        from models.archive_model import predict_archive
+
+        started_at = time.time()
+        values = data.model_dump(exclude={"interval"})
+        result = predict_archive(data.interval, values)
+        result["latency_ms"] = round((time.time() - started_at) * 1000)
+        return result
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=503, detail=f"Archive model is missing: {error}")
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=str(error))
 
 # ── Predict-From-Image Endpoint (vision branch) ────────────────────────────────
 @app.post("/api/predict_image")

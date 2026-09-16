@@ -110,6 +110,32 @@ python run_pipeline.py --train         # Train CNN → BiLSTM → Fusion
 python run_pipeline.py --evaluate      # Metrics + SHAP plots
 ```
 
+### Run the archived 5-minute / 30-minute demo
+
+The archived checkpoints are committed under `archive_5min/trained_model/` and
+`archive_30min/trained_model/`. They are exposed through the FastAPI endpoint
+`/api/archive-predict`, and the React dashboard provides a model interval
+selector.
+
+Start the backend from the project root:
+
+```powershell
+.venv\Scripts\Activate.ps1
+python -m uvicorn api:app --reload --port 8000
+```
+
+In a second terminal, install and start the frontend:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Open the Vite URL shown in the terminal, usually `http://localhost:5173`,
+choose either the 5-minute or 30-minute model, enter the six sensor values,
+and click **Run Inference**.
+
 ---
 
 ## Labeling Strategy (Scientific Basis)

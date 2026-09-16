@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Card, CardHeader } from '../components/Card';
-import { Play, ShieldAlert, Activity, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Play, Activity } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion } from 'framer-motion';
 
 export function ModelDashboard() {
   const [formData, setFormData] = useState({
+    interval: '5min',
     DO: '',
     pH: '',
     temperature: '',
@@ -28,7 +29,7 @@ export function ModelDashboard() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.post('http://localhost:8000/api/predict', formData);
+      const response = await axios.post('http://localhost:8000/api/archive-predict', formData);
       setResult(response.data);
     } catch (err) {
       setError(err.response?.data?.detail || "Failed to connect to the model API. Ensure the Python server is running on port 8000.");
@@ -74,6 +75,22 @@ export function ModelDashboard() {
       <div className="lg:col-span-4">
         <Card className="h-full border-t-4 border-t-blue-600 rounded-t-none">
           <CardHeader title="Model Input Console" subtitle="Enter real-time environmental metrics" />
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider" htmlFor="interval">
+              Sampling interval
+            </label>
+            <select
+              id="interval"
+              name="interval"
+              value={formData.interval}
+              onChange={handleChange}
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+            >
+              <option value="5min">5-minute model</option>
+              <option value="30min">30-minute model</option>
+            </select>
+          </div>
           
           <form onSubmit={handleSubmit} className="space-y-4 mt-2">
             <InputField id="DO" label="Dissolved Oxygen (DO)" placeholder="e.g., 5.5" unit="mg/L" />
@@ -123,7 +140,7 @@ export function ModelDashboard() {
               
               {/* CLASSIFIER RESULT */}
               <Card className="col-span-1 md:col-span-2 max-w-xl mx-auto w-full">
-                <CardHeader title="Risk Classification" subtitle="fish_mortality_lstm_model.pth output" />
+                <CardHeader title="Risk Classification" subtitle={`${result.interval} archived model output`} />
                 <div className="flex flex-col items-center justify-center py-8">
                   <div className={`px-12 py-4 rounded-full border-2 font-black text-3xl tracking-wider ${riskColors[result.risk_label]}`}>
                     {result.risk_label.toUpperCase()} RISK
@@ -153,9 +170,9 @@ export function ModelDashboard() {
               </div>
               <div className="font-mono text-sm text-emerald-400 bg-black/50 p-4 rounded-lg overflow-x-auto space-y-1">
                 <p>&gt; Received payload [DO: {formData.DO}, pH: {formData.pH}, Weight: {formData.fish_weight}...]</p>
-                <p>&gt; Applying scaler.pkl transform (6 features)...</p>
+                <p>&gt; Loading {result.interval} checkpoint and scaler...</p>
                 <p>&gt; Tensor reshaped to (1, 24, 6) assuming steady-state history...</p>
-                <p>&gt; Executing forward pass on Unified LSTM model...</p>
+                <p>&gt; Executing archived BiLSTM risk model...</p>
                 <p>&gt; Logits returned. Applying structural Softmax...</p>
                 <p className="text-blue-400 pt-2 font-bold">&gt; INFERENCE COMPLETE. LATENCY: {result.latency_ms}ms.</p>
               </div>

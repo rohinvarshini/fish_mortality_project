@@ -91,7 +91,27 @@ def load_checkpoint(
     if not os.path.exists(path):
         raise FileNotFoundError(f"Checkpoint not found: {path}")
     ckpt = torch.load(path, map_location=device)
-    model.load_state_dict(ckpt["model"])
+    state_dict = ckpt["model"]
+    try:
+        model.load_state_dict(state_dict)
+    except RuntimeError:
+        expected_keys = set(model.state_dict())
+        for prefix in ("bilstm.", "classifier.", "model."):
+            if not all(key.startswith(prefix) for key in state_dict):
+                if prefix == "bilstm.":
+                    unwrapped = {
+                        ("lstm." + key[len(prefix):] if key.startswith(prefix) else key): value
+                        for key, value in state_dict.items()
+                    }
+                else:
+                    continue
+            else:
+                unwrapped = {key[len(prefix):]: value for key, value in state_dict.items()}
+            if set(unwrapped) == expected_keys:
+                model.load_state_dict(unwrapped)
+                break
+        else:
+            raise
     if optimizer and "optimizer" in ckpt:
         optimizer.load_state_dict(ckpt["optimizer"])
     print(f"[v] Loaded checkpoint '{name}' (epoch {ckpt.get('epoch','?')}, "
